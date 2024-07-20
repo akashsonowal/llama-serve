@@ -1,0 +1,7 @@
+apiVersion: v1
+description: llama-service
+maintainers:
+- email: work.akashsonowal@gmail.com
+  name: Akash Sonowal
+name: llama-service
+version: 0.0.1
