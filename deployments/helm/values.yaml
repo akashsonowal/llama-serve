@@ -1,0 +1,16 @@
+appProps: log_level=debug
+artifactorySecret: null
+aws:
+  irsaRole: arn:aws:iam::
+  region: eu-west-1
+
+coursierCache:
+  location: tmp/addpwrapper/
+dataserviceCredentials: null
+dockerCmdOverride: null
+
+here: {}
+hostname: null
+namespace: null
+serviceAccount: "akashsonowal""
+image: docker-image
