@@ -1,0 +1,6 @@
+matplotlib
+torch
+transformers
+fastapi
+uvicorn
+locust
