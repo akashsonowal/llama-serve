@@ -17,3 +17,7 @@ For our setup we will use 3 nodes each node with 1 GPU
 ```
 nvtop
 ```
+
+```
+scp -r replace_local_folder_path  mapcreation@10.168.16.157:/mounted_nfs_data/"
+```
