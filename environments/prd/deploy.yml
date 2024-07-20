@@ -1,0 +1,173 @@
+---
+# Source: automated-driving-data-preparation-webservice/templates/networkpolicy.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: prd-automated-driving-data-preparation-webservice
+  labels:
+    app: automated-driving-data-preparation-webservice
+    chart: automated-driving-data-preparation-webservice-0.0.159
+    release: "prd"
+spec:
+  podSelector:
+    matchLabels:
+      app: automated-driving-data-preparation-webservice
+      release: "prd"
+  ingress:
+  - from: []
+    ports:
+    - protocol: TCP
+      port: 8080
+---
+# Source: automated-driving-data-preparation-webservice/templates/ServiceAccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hdmap-pub-p
+  namespace: here-walle-automated-driving-data-preparation-service-prd
+  annotations:
+
+    # Required, the ARN of the role you want to assume in your workload
+    irsa.amazonaws.com/role-arn: arn:aws:iam::891701685943:role/hdlm-classic-irsa-role-prod
+
+    # Required, and must be set up to the value: "https://identity.api.platform.in.here.com", it's predefined in cluster configuration
+    irsa.amazonaws.com/audience: "https://identity.api.platform.in.here.com"
+---
+# Source: automated-driving-data-preparation-webservice/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prd-automat
+  labels:
+    app: automated-dr
+    chart: auto
+    release: "prd"
+data:
+  application.properties:   log_level=debug
+---
+# Source: automated-driving-data-preparation-webservice/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: p
+  labels:
+    app: automat
+    chart: automa
+    release: "prd"
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "900"
+    service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+    external-dns.alpha.kubernetes.io/hostname: were.com
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/actuator/prometheus"
+spec:
+  type: LoadBalancer
+  selector:
+    app: auto
+    release: "prd"
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+---
+# Source: automated-driving-data-preparation-webservice/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prd-autom
+  namespace: here
+  labels:
+    app: automa
+    chart: auto
+    release: "prd"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autom
+      release: "prd"
+  template:
+    metadata:
+      labels:
+        app: automat
+        chart: autom
+        release: "prd"
+    spec:
+      serviceAccountName: hdmap-pub-p
+      containers:
+        - name: walle-webservice
+          image: "h"
+          args:
+            - "-Dspring.profiles.active=prd"
+            - "-jar"
+            - "app.jar"
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: 4
+              memory: 8Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
+          imagePullPolicy: "IfNotPresent"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 20
+            periodSeconds: 30
+          env:
+            - name: AWS_DEFAULT_REGION
+              value: eu-west-1
+            - name: AWS_REGION
+              value: eu-west-1
+            - name: COURSIER_CACHE
+              value: tmp/addpwrapper/
+          volumeMounts:
+            - name: config-volume
+              readOnly: true
+              mountPath: /application.properties
+              subPath: application.properties
+            - name: dataservices-creds
+              mountPath: "/.here"
+              readOnly: true
+      volumes:
+        - name: config-volume
+          configMap:
+            name: prd-automated-driving-data-preparation-webservice
+        - name: dataservices-creds
+          secret:
+            secretName: addps-dataservices-secret
+---
+# Source: automated-driving-data-preparation-webservice/templates/hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: prd-
+  labels:
+    app: aut
+    chart: au
+    release: "prd"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: prd-
+  minReplicas: 1
+  maxReplicas: 1
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 90
