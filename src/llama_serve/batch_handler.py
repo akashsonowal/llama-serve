@@ -24,9 +24,7 @@ class BatchHandler:
 
     async def consume(self):
         while True:
-            if len(self._queue) >= self.max_batch_size:
-                self.callback_fn(self._queue, self._responses, self.max_batch_size)
-                self._queue.clear()
+            self.callback_fn(self._queue, self._responses, self.max_batch_size)
             await asyncio.sleep(0.001)
     
     async def wait_for_reply(self, uid: str) -> dict:
@@ -38,7 +36,7 @@ class BatchHandler:
             await asyncio.sleep(0.001)
 
 if __name__ == "__main__":
-    queue_size = 32
+    queue_size = 1
     batch_size = 8
 
     prompts = [

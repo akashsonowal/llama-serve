@@ -183,6 +183,9 @@ class LLMInference:
         )
 
     def generate(self, request_queue, response_queue, batch_size):
+        if len(request_queue) == 0:
+            return
+        
         batch, uids = self._init_batch(request_queue[:batch_size])
         cached_batch = self.generate_next_token(batch)  # prefill step
         request_queue = request_queue[batch_size:]
