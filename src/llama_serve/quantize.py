@@ -1,108 +1,110 @@
-import copy
-import matplotlib.pyplot as plt
-import numpy as np
-import random
-import time
-import torch
-import torch.nn.functional as F
-from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers.models.gpt2.modeling_gpt2 import GPT2Model
-from utils import generate
+# todo: implement quantization
 
-model_name = "/home/ubuntu/llama-serve/artifacts/gpt2"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+# import copy
+# import matplotlib.pyplot as plt
+# import numpy as np
+# import random
+# import time
+# import torch
+# import torch.nn.functional as F
+# from tqdm import tqdm
+# from transformers import AutoModelForCausalLM, AutoTokenizer
+# from transformers.models.gpt2.modeling_gpt2 import GPT2Model
+# from utils import generate
 
-# Define PAD Token = EOS Token = 50256
-tokenizer.pad_token = tokenizer.eos_token
-model.config.pad_token_id = model.config.eos_token_id
+# model_name = "/home/ubuntu/llama-serve/artifacts/gpt2"
+# tokenizer = AutoTokenizer.from_pretrained(model_name)
+# model = AutoModelForCausalLM.from_pretrained(model_name)
 
-# pad on the left so we can append new tokens on the right
-tokenizer.padding_side = "left"
-tokenizer.truncation_side = "left"
+# # Define PAD Token = EOS Token = 50256
+# tokenizer.pad_token = tokenizer.eos_token
+# model.config.pad_token_id = model.config.eos_token_id
 
-# fix dtype post quantization to "pretend" to be fp32
-def get_float32_dtype(self):
-    return torch.float32
-GPT2Model.dtype = property(get_float32_dtype)
+# # pad on the left so we can append new tokens on the right
+# tokenizer.padding_side = "left"
+# tokenizer.truncation_side = "left"
 
-print(model.get_memory_footprint())
+# # fix dtype post quantization to "pretend" to be fp32
+# def get_float32_dtype(self):
+#     return torch.float32
+# GPT2Model.dtype = property(get_float32_dtype)
 
-def quantize(t):
-    # obtain range of values in the tensor to map between 0 and 255
-    min_val, max_val = t.min(), t.max()
+# print(model.get_memory_footprint())
 
-    # determine the "zero-point", or value in the tensor to map to 0
-    scale = (max_val - min_val) / 255
-    zero_point = min_val
+# def quantize(t):
+#     # obtain range of values in the tensor to map between 0 and 255
+#     min_val, max_val = t.min(), t.max()
 
-    # quantize and clamp to ensure we're in [0, 255]
-    t_quant = (t - zero_point) / scale
-    t_quant = torch.clamp(t_quant, min=0, max=255)
+#     # determine the "zero-point", or value in the tensor to map to 0
+#     scale = (max_val - min_val) / 255
+#     zero_point = min_val
 
-    # keep track of scale and zero_point for reversing quantization
-    state = (scale, zero_point)
+#     # quantize and clamp to ensure we're in [0, 255]
+#     t_quant = (t - zero_point) / scale
+#     t_quant = torch.clamp(t_quant, min=0, max=255)
 
-    # cast to uint8 and return
-    t_quant = t_quant.type(torch.uint8)
-    return t_quant, state
+#     # keep track of scale and zero_point for reversing quantization
+#     state = (scale, zero_point)
 
-t = model.transformer.h[0].attn.c_attn.weight.data
-print(t, t.shape)
+#     # cast to uint8 and return
+#     t_quant = t_quant.type(torch.uint8)
+#     return t_quant, state
 
-t_q, state = quantize(t)
-print(t_q, t_q.min(), t_q.max())
+# t = model.transformer.h[0].attn.c_attn.weight.data
+# print(t, t.shape)
 
-def dequantize(t, state):
-    scale, zero_point = state
-    return t.to(torch.float32) * scale + zero_point
+# t_q, state = quantize(t)
+# print(t_q, t_q.min(), t_q.max())
 
-t_rev = dequantize(t_q, state)
-print(t_rev)
+# def dequantize(t, state):
+#     scale, zero_point = state
+#     return t.to(torch.float32) * scale + zero_point
 
-torch.abs(t - t_rev)
+# t_rev = dequantize(t_q, state)
+# print(t_rev)
 
-response_expected = generate(
-    model,
-    tokenizer,
-    [("The quick brown fox jumped over the", 10)]
-)[0]
-response_expected
+# torch.abs(t - t_rev)
 
-def quantize_model(model):
-    states = {}
-    for name, param in model.named_parameters():
-        param.requires_grad = False
-        param.data, state = quantize(param.data)
-        states[name] = state
-    return model, states
+# response_expected = generate(
+#     model,
+#     tokenizer,
+#     [("The quick brown fox jumped over the", 10)]
+# )[0]
+# response_expected
 
-quant_model, states = quantize_model(model)
+# def quantize_model(model):
+#     states = {}
+#     for name, param in model.named_parameters():
+#         param.requires_grad = False
+#         param.data, state = quantize(param.data)
+#         states[name] = state
+#     return model, states
 
-print(quant_model.get_memory_footprint())
+# quant_model, states = quantize_model(model)
 
-def size_in_bytes(t):
-    return t.numel() * t.element_size()
+# print(quant_model.get_memory_footprint())
 
-sum([
-    size_in_bytes(v[0]) + size_in_bytes(v[1])
-    for v in states.values()
-])
+# def size_in_bytes(t):
+#     return t.numel() * t.element_size()
 
-def dequantize_model(model, states):
-    for name, param in model.named_parameters():
-        state = states[name]
-        param.data = dequantize(param.data, state)
-    return model
+# sum([
+#     size_in_bytes(v[0]) + size_in_bytes(v[1])
+#     for v in states.values()
+# ])
 
-dequant_model = dequantize_model(quant_model, states)
+# def dequantize_model(model, states):
+#     for name, param in model.named_parameters():
+#         state = states[name]
+#         param.data = dequantize(param.data, state)
+#     return model
 
-dequant_model.get_memory_footprint()
+# dequant_model = dequantize_model(quant_model, states)
 
-response_expected = generate(
-    dequant_model,
-    tokenizer,
-    [("The quick brown fox jumped over the", 10)]
-)[0]
-response_expected
+# dequant_model.get_memory_footprint()
+
+# response_expected = generate(
+#     dequant_model,
+#     tokenizer,
+#     [("The quick brown fox jumped over the", 10)]
+# )[0]
+# response_expected
