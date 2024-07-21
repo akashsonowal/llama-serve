@@ -9,23 +9,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from uvicorn import Config, Server
 
-from batching import BatchQueue
+from batch_handler import BatchHandler
 
 logger = logging.getLogger(__name__)
 
 
-class MLServe:
+class LLamaServe:
     def __init__(
         self,
         handle: Callable,
         input_schema: Optional[BaseModel],
         response_schema: Optional[BaseModel],
-        max_batch_size: int = 16,
-        batch_wait_timeout_s: int = 0.05,
+        max_batch_size: int = 64,
     ):
         self.loop = asyncio.get_event_loop()
-        self.queue = BatchQueue(self.loop, max_batch_size, batch_wait_timeout_s, handle)
-        self.app = FastAPI(title="MLServe: A scalable ML Server", docs_url="/")
+        self.queue = BatchHandler(max_batch_size, handle)
+        self.app = FastAPI(title="LLamaServe: A scalable LLM Server", docs_url="/")
         self.config = Config(app=self.app, loop=self.loop, host="0.0.0.0", port=8080)
         self.server = Server(self.config)
 
@@ -57,7 +56,4 @@ class MLServe:
         self.loop.run_until_complete(self.server.serve())
 
 if __name__ == "__main__":
-    def f(x):
-        return x
-    ml_serve = MLServe(f)
-    ml_serve.run_server()
+    pass 
