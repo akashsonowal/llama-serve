@@ -21,3 +21,8 @@ nvtop
 ```
 scp -r replace_local_folder_path  mapcreation@10.168.16.157:/mounted_nfs_data/"
 ```
+
+### Install container toolkit
+```
+https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+```
