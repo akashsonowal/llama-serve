@@ -48,3 +48,7 @@ docker run --gpus all -v /home/ubuntu/llama-serve/artifacts/:/home/ubuntu/llama-
     - follow kudeadm commands
     - whitelist the traffic
 2. Setup CNI plugins like Calico etc
+
+### Reference
+
+https://www.youtube.com/watch?v=xX52dc3u2HU
