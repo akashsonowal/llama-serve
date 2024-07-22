@@ -41,3 +41,10 @@ docker build -t llama_serve:v1 .
 ```
 docker run --gpus all -v /home/ubuntu/llama-serve/artifacts/:/home/ubuntu/llama-serve/artifacts/ -p 8080:8080 llama_serve:v1
 ```
+
+### Install Kubernetes 
+
+1. To setup cluster we can use either kubeadm or kops
+    - follow kudeadm commands
+    - whitelist the traffic
+2. Setup CNI plugins like Calico etc
