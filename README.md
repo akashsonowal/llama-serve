@@ -21,8 +21,21 @@ nvtop
 ```
 scp -r replace_local_folder_path  mapcreation@10.168.16.157:/mounted_nfs_data/"
 ```
+## Steps
+
+### Install Docker Engine
+
 
 ### Install container toolkit
 ```
 https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+```
+
+### Build docker container and run container
+```
+docker build -t llama_serve:v1 .
+```
+
+```
+docker run --gpus all -v /home/ubuntu/llama-serve/artifacts/:/home/ubuntu/llama-serve/artifacts/ -p 8080:8080 llama_serve:v1
 ```
