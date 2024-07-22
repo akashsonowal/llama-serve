@@ -75,7 +75,7 @@ class LLamaServe:
             raise HTTPException(status_code=500, detail="Internal Server Error")
 
     def run_server(self):
-        uvicorn.run(self._app, host="0.0.0.0", port=7000, log_level="info")
+        uvicorn.run(self._app, host="0.0.0.0", port=8080, log_level="info")
 
 
 if __name__ == "__main__":
