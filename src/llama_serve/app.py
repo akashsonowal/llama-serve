@@ -80,8 +80,4 @@ class LLamaServe:
 
 if __name__ == "__main__":
     llama_serve = LLamaServe(model_name="/home/ubuntu/llama-serve/artifacts/gpt2")
-<<<<<<< HEAD
     llama_serve.run_server()
-=======
-    llama_serve.run_server()
->>>>>>> b37a0e9fd86b7d44910d6d5b47a5d2fbbcbd74d2
