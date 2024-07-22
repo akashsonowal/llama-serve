@@ -36,7 +36,7 @@ class BatchHandler:
             await asyncio.sleep(0.001)
 
 if __name__ == "__main__":
-    queue_size = 1
+    queue_size = 32
     batch_size = 8
 
     prompts = [
