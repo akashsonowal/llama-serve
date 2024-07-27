@@ -49,6 +49,18 @@ docker run --gpus all -v /home/ubuntu/llama-serve/artifacts/:/home/ubuntu/llama-
     - whitelist the traffic
 2. Setup CNI plugins like Calico etc
 
+### Other steps:
+
+change hostname
+```
+sudo hostnamectl set-hostname k8s-control-plane
+```
+
+add ip of all nodes in same subnet
+```
+sudo nano /etc/hosts 
+```
+
 ### Reference
 
 https://www.youtube.com/watch?v=xX52dc3u2HU
