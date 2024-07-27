@@ -60,6 +60,48 @@ add ip of all nodes in same subnet
 ```
 sudo nano /etc/hosts 
 ```
+add extra kernels in conf
+```
+cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
+> overlay
+> br_netfilter
+> EOF
+```
+manually apply the kernel modules
+```
+sudo modprobe overlay
+sudo modprobe br_netfilter
+```
+setup networks
+```
+cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward = 1
+EOF
+```
+to apply them
+```
+sudo sysctl --system
+```
+```
+sudo apt-get install gnupg
+```
+install docker and containerd
+```
+sudo containerd config default | sudo tee /etc/containerd/config.toml
+```
+```
+sudo swapoff -a
+```
+```
+sudo systemctl restart containerd
+sudo systemctl status containerd
+```
+```
+follow the kubernetes installation guide https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl
+
+
 
 ### Reference
 
